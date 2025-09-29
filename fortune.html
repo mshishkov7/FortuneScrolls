@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unrolling Ancient Scroll</title>
+    <style>
+        html {
+            overflow: hidden;
+        }
+
+        :root {
+            --scroll-width: 300px;
+            --scroll-height-collapsed: 62px;
+            --scroll-height-unrolled: 600px;
+            --font-size: 1.2em;
+            --header-height: 20px;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f2e9d8;
+            margin: 0;
+            font-family: 'Times New Roman', serif;
+            overflow: hidden;
+        }
+
+        .header-bar {
+            width: 100%;
+            background: linear-gradient(to bottom, #f9f0e1, #e9d5b7);
+            border: 1px solid #7a5e3e;
+            padding: 20px 0;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            height: var(--header-height);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        h1 {
+            font-family: 'Gabriola', cursive;
+            font-size: 2.5em;
+            color: #4a3a2a;
+            text-align: center;
+            margin: 0;
+        }
+
+        .scroll-gallery {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 50px;
+            height: calc(100vh - var(--header-height));
+            overflow-y: auto;
+            padding: 50px;
+            box-sizing: border-box;
+            scrollbar-width: none;
+            /* Firefox */
+            -ms-overflow-style: none;
+            /* IE and Edge */
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .scroll-gallery::-webkit-scrollbar {
+            display: none;
+            /* Chrome, Safari, and Opera */
+        }
+
+        .scroll-container {
+            position: relative;
+            width: var(--scroll-width);
+            height: var(--scroll-height-collapsed);
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.8s ease-in-out;
+            flex-shrink: 0;
+        }
+
+        /* Focus Mode: Other scrolls fade out */
+        .scroll-gallery.gallery-focused .scroll-container:not(.selected):not(.is-animating) {
+            opacity: 0;
+            transform: scale(0.8);
+            pointer-events: none;
+        }
+
+        /* Focus Mode: Selected scroll moves to center */
+        .scroll-gallery.gallery-focused .scroll-container.selected {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+        }
+
+        .scroll-body {
+            position: absolute;
+            width: calc(var(--scroll-width) - 40px);
+            height: 0;
+            top: 0;
+            background: linear-gradient(to bottom, #f9f0e1, #e9d5b7);
+            border: 1px solid #c4a781;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
+            transform-origin: top center;
+            z-index: 2;
+            padding: 0 20px;
+            box-sizing: border-box;
+            overflow: hidden;
+            opacity: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .scroll-edge {
+            position: absolute;
+            width: var(--scroll-width);
+            height: 25px;
+            background-color: #a0815b;
+            border: 2px solid #7a5e3e;
+            border-radius: 5px;
+            z-index: 3;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .scroll-top {
+            top: 0;
+        }
+
+        .scroll-bottom {
+            bottom: 0;
+        }
+
+        .fortune-content {
+            width: calc(100% - 40px);
+            color: #4a3a2a;
+            font-size: var(--font-size);
+            text-align: center;
+            line-height: 1.6;
+            font-family: 'Gabriola', cursive;
+            opacity: 0;
+            transition: opacity 0.5s ease 0.8s;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .author-placeholder {
+            text-align: right;
+            font-size: 1em;
+            margin-top: 10px;
+        }
+
+        .text-placeholder {
+            width: 100%;
+            border: none;
+            color: #414141;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-style: italic;
+        }
+
+        /* Animation states */
+        .scroll-container.unrolled {
+            height: var(--scroll-height-unrolled);
+        }
+
+        .scroll-container.closing {
+            height: var(--scroll-height-collapsed);
+        }
+
+        .scroll-container.unrolled .scroll-body,
+        .scroll-container.closing .scroll-body {
+            transition: transform 2s ease-in-out, opacity 2s ease-in-out, padding 2s ease-in-out;
+        }
+
+        .scroll-container.unrolled .scroll-body {
+            height: 100%;
+            opacity: 1;
+            transform: scaleY(1);
+            padding-top: 20px;
+            padding-bottom: 20px;
+        }
+
+        .scroll-container.unrolled .fortune-content {
+            opacity: 1;
+        }
+
+        .scroll-container.unrolled .prompt {
+            opacity: 0;
+        }
+
+        .scroll-container.closing .scroll-body {
+            transform: scaleY(0);
+            opacity: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+        }
+
+        .scroll-container.closing .fortune-content {
+            opacity: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header-bar">
+        <h1>Choose your fortune</h1>
+    </div>
+    <div class="scroll-gallery">
+        <!-- Scrolls will be dynamically generated by JavaScript -->
+    </div>
+
+    <template id="scroll-template">
+        <div class="scroll-container">
+            <div class="scroll-top scroll-edge"></div>
+            <div class="scroll-body">
+                <div class="fortune-content">
+                    <div class="text-placeholder">
+                        Your profound wisdom here
+                    </div>
+                    <div class="author-placeholder" style="text-align: right; font-size: 0.8em; margin-top: 10px;">
+                    </div>
+                </div>
+            </div>
+            <div class="scroll-bottom scroll-edge"></div>
+        </div>
+    </template>
+
+    <script>
+        const gallery = document.querySelector('.scroll-gallery');
+        const template = document.querySelector('#scroll-template');
+        let isAnimating = false;
+        let isFetchingMore = false;
+
+        function createScrolls(num, atStart = false) {
+            for (let i = 0; i < num; i++) {
+                const scrollClone = template.content.cloneNode(true);
+                if (atStart) {
+                    gallery.insertBefore(scrollClone, gallery.firstChild);
+                } else {
+                    gallery.appendChild(scrollClone);
+                }
+            }
+        }
+
+        async function getFortune(textPlaceholder, authorPlaceholder) {
+            try {
+                const response = await fetch('https://api.quotable.io/random');
+                const data = await response.json();
+                textPlaceholder.textContent = data.content;
+                authorPlaceholder.textContent = "- " + data.author;
+            } catch (error) {
+                textPlaceholder.textContent = 'Could not fetch a fortune. Please try again later.';
+            }
+        }
+
+        function openScroll(container) {
+            container.classList.add('unrolled');
+            const textPlaceholder = container.querySelector('.text-placeholder');
+            const authorPlaceholder = container.querySelector('.author-placeholder');
+            getFortune(textPlaceholder, authorPlaceholder);
+        }
+
+        function closeScroll(container) {
+            isAnimating = true;
+            container.style.transition = 'opacity 0.5s ease';
+            container.style.opacity = '0';
+
+            container.addEventListener('transitionend', (e) => {
+                if (e.propertyName !== 'opacity') return;
+
+                gallery.removeChild(container);
+                gallery.classList.remove('gallery-focused');
+
+                const newScroll = template.content.cloneNode(true);
+                const newScrollContainer = newScroll.querySelector('.scroll-container');
+                const textPlaceholder = newScrollContainer.querySelector('.text-placeholder');
+                const authorPlaceholder = newScrollContainer.querySelector('.author-placeholder');
+                getFortune(textPlaceholder, authorPlaceholder);
+                gallery.insertBefore(newScroll, gallery.firstChild);
+
+                isAnimating = false;
+            }, { once: true });
+        }
+
+        gallery.addEventListener('click', (e) => {
+            if (isAnimating) return;
+
+            const clickedContainer = e.target.closest('.scroll-container');
+            if (!clickedContainer || clickedContainer.classList.contains('unrolled')) return;
+
+            isAnimating = true;
+
+            const rect = clickedContainer.getBoundingClientRect();
+
+            clickedContainer.classList.add('is-animating');
+            clickedContainer.style.transition = 'none';
+            clickedContainer.style.display = 'none';
+            clickedContainer.style.opacity = '0';
+
+
+            // Create a clone to animate
+            const clone = clickedContainer.cloneNode(true);
+            clone.style.display = 'flex';
+            clone.style.transition = '';
+            clone.style.visibility = 'visible';
+            clone.style.opacity = '1';
+            clone.classList.remove('is-animating');
+            clone.style.position = 'fixed';
+            clone.style.top = `${rect.top}px`;
+            clone.style.left = `${rect.left}px`;
+            clone.style.width = `${rect.width}px`;
+            clone.style.height = `${rect.height}px`;
+            clone.style.zIndex = '10';
+            clone.style.margin = '0';
+            document.body.appendChild(clone);
+
+            // Fade out other scrolls
+            gallery.classList.add('gallery-focused');
+
+            // Animate the clone to the center
+            requestAnimationFrame(() => {
+                const centerX = window.innerWidth / 2;
+                const centerY = window.innerHeight / 2;
+                clone.style.top = `${centerY - rect.height / 2}px`;
+                clone.style.left = `${centerX - rect.width / 2}px`;
+            });
+
+            clone.addEventListener('transitionend', function onMoveEnd(event) {
+                if (event.target === clone && event.propertyName === 'top') {
+                    // --- Start of fix for the "jump" ---
+                    // 1. Disable transitions on the original element to make style changes instant
+                    clickedContainer.style.transition = 'none';
+
+                    // 2. Make the original element visible and apply the .selected class.
+                    //    This snaps it to the centered position without animation.
+                    clickedContainer.style.display = '';
+                    clickedContainer.style.visibility = 'visible';
+                    clickedContainer.style.opacity = '1';
+                    clickedContainer.classList.remove('is-animating');
+                    clickedContainer.classList.add('selected');
+
+                    // 3. Remove the clone now that the original is in place.
+                    document.body.removeChild(clone);
+
+                    // 4. Force the browser to apply the above style changes immediately.
+                    void clickedContainer.offsetHeight;
+
+                    // 5. Re-enable transitions so the upcoming unrolling animation is smooth.
+                    clickedContainer.style.transition = '';
+
+                    // 6. In the next frame, trigger the unroll animation.
+                    requestAnimationFrame(() => {
+                        openScroll(clickedContainer);
+                    });
+                    // --- End of fix ---
+
+                    clone.removeEventListener('transitionend', onMoveEnd);
+                }
+            });
+        });
+
+        document.addEventListener('click', (e) => {
+            const openContainer = document.querySelector('.scroll-container.unrolled');
+            if (openContainer && !openContainer.contains(e.target)) {
+                closeScroll(openContainer);
+            }
+        });
+
+        gallery.addEventListener('scroll', () => {
+            if (isFetchingMore) return;
+
+            const { scrollTop, scrollHeight, clientHeight } = gallery;
+            if (scrollTop + clientHeight >= scrollHeight - 100) {
+                isFetchingMore = true;
+                createScrolls(5);
+                isFetchingMore = false;
+            } else if (scrollTop < 100) {
+                isFetchingMore = true;
+                const oldScrollHeight = gallery.scrollHeight;
+                createScrolls(5, true);
+                gallery.scrollTop += gallery.scrollHeight - oldScrollHeight;
+                isFetchingMore = false;
+            }
+        });
+
+        // Initial load
+        createScrolls(20);
+        const scrolls = gallery.querySelectorAll('.scroll-container');
+        if (scrolls.length > 0) {
+            const middleScroll = scrolls[Math.floor(scrolls.length / 2)];
+            middleScroll.scrollIntoView({ block: 'center' });
+        }
+    </script>
+
+</body>
+
+</html>
