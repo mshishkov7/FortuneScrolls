@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Choose Your Fortune 3</title>
+    <title>Fortunes</title>
     <style>
         html {
             overflow: hidden;
@@ -364,32 +364,28 @@
                 clone.style.left = `${centerX - rect.width / 2}px`;
             });
 
-            clone.addEventListener('transitionend', function onMoveEnd(event) {
-                if (event.target === clone && event.propertyName === 'top') {
-                    // --- Start of fix for the "jump" ---
-                    clickedContainer.style.transition = 'none';
-                    clickedContainer.style.display = '';
-                    clickedContainer.style.visibility = 'visible';
-                    clickedContainer.style.opacity = '1';
-                    clickedContainer.classList.remove('is-animating');
-                    clickedContainer.classList.add('selected');
+            setTimeout(() => {
+                // --- Start of fix for the "jump" ---
+                clickedContainer.style.transition = 'none';
+                clickedContainer.style.display = '';
+                clickedContainer.style.visibility = 'visible';
+                clickedContainer.style.opacity = '1';
+                clickedContainer.classList.remove('is-animating');
+                clickedContainer.classList.add('selected');
 
-                    if (clone.parentNode) {
-                        clone.parentNode.removeChild(clone);
-                    }
-
-                    void clickedContainer.offsetHeight;
-                    clickedContainer.style.transition = '';
-
-                    // 6. In the next frame, trigger the unroll animation.
-                    requestAnimationFrame(async () => {
-                        await openScroll(clickedContainer);
-                    });
-                    // --- End of fix ---
-
-                    clone.removeEventListener('transitionend', onMoveEnd);
+                if (clone.parentNode) {
+                    clone.parentNode.removeChild(clone);
                 }
-            });
+
+                void clickedContainer.offsetHeight;
+                clickedContainer.style.transition = '';
+
+                // 6. In the next frame, trigger the unroll animation.
+                requestAnimationFrame(async () => {
+                    await openScroll(clickedContainer);
+                });
+                // --- End of fix ---
+            }, 800); // 800ms matches the CSS transition duration
         });
 
         document.addEventListener('click', (e) => {
